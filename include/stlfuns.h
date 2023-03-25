@@ -9,20 +9,30 @@
 #include <vector>
 
 /*STL data structures*/
-struct Vertex
+namespace Stl
 {
-    std::array<float,3> V;
-};
-struct Triangle
-{
-    std::array<float,3> normal;
-    std::array<Vertex,3> vertices;
-};
-struct StlObject
-{
-    std::size_t n_triangles = 0;
-    std::vector<Triangle> tris;
-};
+    enum STL_File_Type
+    {
+        ascii,
+        binary,
+        invalid = -1,
+    };
+    struct Vertex
+    {
+        std::array<float,3> V;
+    };
+    struct Triangle
+    {
+        std::array<float,3> normal;
+        std::array<Vertex,3> vertices;
+    };
+    struct StlObject
+    {
+        std::size_t n_triangles = 0;
+        std::vector<Triangle> tris;
+        STL_File_Type filetype;
+    };
+}
 
 /* Regex Functions*/
 
