@@ -7,7 +7,9 @@ int main()
 {
     std::fstream stl_file;
 
-    stl_file.open("test-files/sphere_ascii.stl");
+    const std::string ascii_filename = "test-files/sphere_ascii.stl";
+
+    stl_file.open(ascii_filename);
     std::string sa;
     while(std::getline(stl_file,sa)){
         std::cout << sa << '\n';
