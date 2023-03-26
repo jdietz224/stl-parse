@@ -28,6 +28,7 @@ namespace Stl
     };
     struct StlObject
     {
+        std::string name;
         std::size_t n_triangles = 0;
         std::vector<Triangle> tris;
         STL_File_Type filetype;
