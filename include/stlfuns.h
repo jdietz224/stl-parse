@@ -33,6 +33,11 @@ namespace Stl
         std::vector<Triangle> tris;
         STL_File_Type filetype;
     };
+
+    std::ostream& operator<<(std::ostream& out, Vertex& vert)
+    {
+        return out << vert.V[0] << '\t' << vert.V[1] << '\t' << vert.V[2];
+    }
 }
 
 /* Regex Functions*/

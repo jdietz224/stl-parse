@@ -64,8 +64,7 @@ int main()
     //tmp_v2 = tri_vec[1].vertices[1];
     //tmp_v3 = tri_vec[2].vertices[2];
 
-    std::cout << tmp_v1.V[0] << '\t' << tmp_v1.V[1] << '\t' << tmp_v1.V[2] << '\n'
-        << tmp_n.V[0] << '\t' << tmp_n.V[1] << '\t' << tmp_n.V[2] << std::endl;
+    std::cout << tmp_v1 << '\n' << tmp_n << '\n';
 
     stl_file_binary.close();
 }
