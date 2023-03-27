@@ -23,8 +23,8 @@ namespace Stl
     };
     struct Triangle
     {
-        std::array<float,3> normal;
         std::array<Vertex,3> vertices;
+        Vertex normal;
     };
     struct StlObject
     {
