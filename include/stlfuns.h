@@ -58,20 +58,40 @@ namespace Stl
         auto fileflags = std::ios::in;
         uint32_t num_triangles;
 
-        if (isBinary) fileflags = fileflags | std::ios::binary;
+        if (isBinary) {
+            fileflags = fileflags | std::ios::binary;
+            obj.filetype = binary;
+        }
 
         std::ifstream stlfile(filename, fileflags);
 
         char char_header[HEADER_SIZE + 1];
         std::memset(char_header, '\0', sizeof(char_header));
 
+        //Read the 80 byte header from the file.
         stlfile.read(char_header, HEADER_SIZE);
+        obj.header = char_header;
 
-        std::cout << char_header << '\n';
-        std::cout << std::strlen(char_header) << '\n';
+        //Now get the total number of triangles in the object
+        stlfile.read(reinterpret_cast<char*>(&num_triangles),sizeof(num_triangles));
+        std::cout << num_triangles << '\n';
 
-        stlfile.read(reinterpret_cast<char*>(&obj.n_triangles),sizeof(obj.n_triangles));
-        std::cout << obj.n_triangles << '\n';
+        obj.n_triangles = num_triangles;
+        obj.tris.reserve(num_triangles);
+
+        //Loop through the number of triangles and read the data for each of them
+        float n_vec[3],vert_1[3],vert_2[3],vert_3[3];
+        char attribute_byte_count[2];
+
+        for(uint32_t i = 0; i < num_triangles; i++){
+            stlfile.read(reinterpret_cast<char*>(&n_vec),sizeof(n_vec));    //Read the normal vector
+            stlfile.read(reinterpret_cast<char*>(&vert_1),sizeof(vert_1));  //Read the three vertices
+            stlfile.read(reinterpret_cast<char*>(&vert_2),sizeof(vert_2));
+            stlfile.read(reinterpret_cast<char*>(&vert_3),sizeof(vert_3));
+            stlfile.read(attribute_byte_count,sizeof(attribute_byte_count));    //Two byte attribute
+
+            //TODO: Need constructors to change the C-style arrays to Vertex structs etc.
+        }
 
         stlfile.close();
 
