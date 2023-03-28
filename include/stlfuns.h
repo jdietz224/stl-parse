@@ -25,6 +25,7 @@ namespace Stl
     };
     struct StlObject
     {
+        std::string filename;
         STL_File_Type filetype = invalid;
         std::string header = std::string(HEADER_BYTE_SIZE,'\0');
         uint32_t n_triangles = 0;
@@ -55,6 +56,7 @@ namespace Stl
         }
 
         std::ifstream stlfile;
+        obj.filename = filename;
         stlfile.open(filename, fileflags);
         Triangle tmp_tri;
 
