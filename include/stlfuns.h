@@ -20,6 +20,9 @@ namespace Stl
     struct Vertex
     {
         std::array<float,3> V;
+
+        float operator[](int i) const { return V[i]; }
+        float& operator[](int i) { return V[i]; }
     };
     struct Triangle
     {
@@ -36,7 +39,7 @@ namespace Stl
 
     std::ostream& operator<<(std::ostream& out, Vertex& vert)
     {
-        return out << vert.V[0] << '\t' << vert.V[1] << '\t' << vert.V[2];
+        return out << vert[0] << '\t' << vert[1] << '\t' << vert[2];
     }
 
     std::ostream& operator<<(std::ostream& out, Triangle& T)
