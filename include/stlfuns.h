@@ -28,11 +28,12 @@ namespace Stl
     {
         std::array<Vertex,3> vertices;
         Vertex normal;
+        std::array<char,2> attribute_byte_count;
     };
     struct StlObject
     {
-        std::string name;
-        std::size_t n_triangles = 0;
+        std::string header;
+        uint32_t n_triangles = 0;
         std::vector<Triangle> tris;
         STL_File_Type filetype;
     };
@@ -45,6 +46,30 @@ namespace Stl
     std::ostream& operator<<(std::ostream& out, Triangle& T)
     {
         return out << T.vertices[0] << '\n' << T.vertices[1] << '\n' << T.vertices[2];
+    }
+
+    int readStlFile(std::string filename, bool isBinary)
+    {
+        StlObject obj;
+
+        constexpr int HEADER_SIZE = 80;
+        auto fileflags = std::ios::in;
+        uint32_t num_triangles;
+
+        if (isBinary) fileflags = fileflags | std::ios::binary;
+
+        std::ifstream stlfile(filename, fileflags);
+
+        char header[HEADER_SIZE];
+        stlfile.read(header, HEADER_SIZE);
+
+        printf("%s\n",header);
+
+
+
+        stlfile.close();
+
+        return 0;
     }
 }
 
