@@ -77,6 +77,7 @@ namespace Stl
             obj.tris.push_back(tmp_tri);
         }
 
+        obj.tris.shrink_to_fit();   //This is unnecessary right now, but I don't want to forget it when I parse files that don't have an exact triangle count.
         stlfile.close();
 
         return obj;
