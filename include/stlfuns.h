@@ -56,15 +56,13 @@ namespace Stl
 
         std::ifstream stlfile;
         stlfile.open(filename, fileflags);
-        std::string tmp_header(HEADER_SIZE, '\0');
         Triangle tmp_tri;
 
         //Read the 80 byte header from the file.
-        //TODO: Read this directly into the object's header field? But how to set the header length at declaration?
-        stlfile.read(std::data(tmp_header), HEADER_SIZE);
-        obj.header = tmp_header;
+        stlfile.read(std::data(obj.header), HEADER_SIZE);
 
         //Now get the total number of triangles in the object
+        //TODO: Get rid of all uses of sizeof() function? I'm extremely paranoid about alignment padding causing difficult-to-identify bugs.
         stlfile.read(reinterpret_cast<char*>(&obj.n_triangles),sizeof(obj.n_triangles));
         obj.tris.reserve(obj.n_triangles);
 
