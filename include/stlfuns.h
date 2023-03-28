@@ -10,6 +10,7 @@
 #include <algorithm>
 
 #include <cstring>
+#include <chrono>
 
 /*STL data structures*/
 namespace Stl
@@ -78,11 +79,11 @@ namespace Stl
 
         //Read the 80 byte header from the file.
         stlfile.read(std::data(tmp_header), HEADER_SIZE);
-        std::cout << tmp_header << '\n';
+        std::cout << "File Header: " << tmp_header << '\n';
 
         //Now get the total number of triangles in the object
         stlfile.read(reinterpret_cast<char*>(&num_triangles),sizeof(num_triangles));
-        std::cout << num_triangles << '\n';
+        std::cout << "# triangles: " << num_triangles << '\n';
 
         obj.n_triangles = num_triangles;
         obj.tris.reserve(num_triangles);
@@ -90,14 +91,27 @@ namespace Stl
         //Loop through the number of triangles and read the data for each of them
         Vertex n,v1,v2,v3;
         std::array<char,2> attribute_bytes;
+        Triangle tmp_tri;
 
+        auto begin = std::chrono::high_resolution_clock::now();
         for(uint32_t i = 0; i < num_triangles; i++){
             stlfile.read(reinterpret_cast<char*>(std::data(n)), sizeof(n)); //Read the normal vector
             stlfile.read(reinterpret_cast<char*>(std::data(v1)), sizeof(v1));  //Read the three vertices
             stlfile.read(reinterpret_cast<char*>(std::data(v2)), sizeof(v2));
             stlfile.read(reinterpret_cast<char*>(std::data(v3)), sizeof(v3));
             stlfile.read(std::data(attribute_bytes),sizeof(attribute_bytes));   //Read final two bytes
+
+            tmp_tri.normal = n;
+            tmp_tri.attribute_byte_count = attribute_bytes;
+
+            tmp_tri.vertices = {v1, v2, v3};
+
+            obj.tris.push_back(tmp_tri);
         }
+        auto end = std::chrono::high_resolution_clock::now();
+
+        auto diff = std::chrono::duration_cast<std::chrono::microseconds>(end-begin);
+        std::cout << "File processing time: " << diff.count() << " microseconds\n";
 
         stlfile.close();
 
