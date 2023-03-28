@@ -15,30 +15,20 @@
 /*STL data structures*/
 namespace Stl
 {
+    typedef std::array<float,3> Vertex;
+    constexpr std::size_t TRIANGLE_SIZE = 50;
+
     enum STL_File_Type
     {
         ascii,
         binary,
         invalid = -1,
     };
-
-    typedef std::array<float,3> Vertex;
-
-    /*
-    struct Vertex
-    {
-        std::array<float,3> V;
-
-        float operator[](int i) const { return V[i]; }
-        float& operator[](int i) { return V[i]; }
-    };
-    */
-
     struct Triangle
     {
-        std::array<Vertex,3> vertices;
         Vertex normal;
-        std::array<char,2> attribute_byte_count;
+        std::array<Vertex,3> vertices;
+        uint16_t attribute_byte;
     };
     struct StlObject
     {
@@ -55,7 +45,9 @@ namespace Stl
 
     std::ostream& operator<<(std::ostream& out, Triangle& T)
     {
-        return out << T.vertices[0] << '\n' << T.vertices[1] << '\n' << T.vertices[2];
+        return out << T.normal << '\n' 
+            << T.vertices[0] << '\n' << T.vertices[1] << '\n' << T.vertices[2] << '\n' 
+            << T.attribute_byte << '\n';
     }
 
     int readStlFile(std::string filename, bool isBinary)
@@ -90,22 +82,13 @@ namespace Stl
 
         //Loop through the number of triangles and read the data for each of them
         Vertex n,v1,v2,v3;
-        std::array<char,2> attribute_bytes;
+        uint16_t attribute_byte;
         Triangle tmp_tri;
 
         auto begin = std::chrono::high_resolution_clock::now();
         for(uint32_t i = 0; i < num_triangles; i++){
-            stlfile.read(reinterpret_cast<char*>(std::data(n)), sizeof(n)); //Read the normal vector
-            stlfile.read(reinterpret_cast<char*>(std::data(v1)), sizeof(v1));  //Read the three vertices
-            stlfile.read(reinterpret_cast<char*>(std::data(v2)), sizeof(v2));
-            stlfile.read(reinterpret_cast<char*>(std::data(v3)), sizeof(v3));
-            stlfile.read(std::data(attribute_bytes),sizeof(attribute_bytes));   //Read final two bytes
-
-            tmp_tri.normal = n;
-            tmp_tri.attribute_byte_count = attribute_bytes;
-
-            tmp_tri.vertices = {v1, v2, v3};
-
+            //Read each triangle all at once as a 50-byte chunk of data.
+            stlfile.read(reinterpret_cast<char*>(&tmp_tri), TRIANGLE_SIZE);
             obj.tris.push_back(tmp_tri);
         }
         auto end = std::chrono::high_resolution_clock::now();
