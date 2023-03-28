@@ -7,6 +7,7 @@
 
 #include <array>
 #include <vector>
+#include <algorithm>
 
 #include <cstring>
 
@@ -58,11 +59,12 @@ namespace Stl
 
     int readStlFile(std::string filename, bool isBinary)
     {
-        StlObject obj;
-
         constexpr int HEADER_SIZE = 80;
         auto fileflags = std::ios::in;
         uint32_t num_triangles;
+
+        StlObject obj;
+        obj.header.reserve(HEADER_SIZE);
 
         if (isBinary) {
             fileflags = fileflags | std::ios::binary;
@@ -72,13 +74,11 @@ namespace Stl
         }
 
         std::ifstream stlfile(filename, fileflags);
-
-        char char_header[HEADER_SIZE + 1];
-        std::memset(char_header, '\0', sizeof(char_header));
+        std::string tmp_header(HEADER_SIZE, '\0');
 
         //Read the 80 byte header from the file.
-        stlfile.read(char_header, HEADER_SIZE);
-        obj.header = char_header;
+        stlfile.read(std::data(tmp_header), HEADER_SIZE);
+        std::cout << tmp_header << '\n';
 
         //Now get the total number of triangles in the object
         stlfile.read(reinterpret_cast<char*>(&num_triangles),sizeof(num_triangles));
@@ -93,12 +93,10 @@ namespace Stl
 
         for(uint32_t i = 0; i < num_triangles; i++){
             stlfile.read(reinterpret_cast<char*>(std::data(n)), sizeof(n)); //Read the normal vector
-            stlfile.read(reinterpret_cast<char*>(std::data(v1)),sizeof(v1));  //Read the three vertices
-            stlfile.read(reinterpret_cast<char*>(std::data(v2)),sizeof(v2));
-            stlfile.read(reinterpret_cast<char*>(std::data(v3)),sizeof(v3));
-            stlfile.read(std::data(attribute_bytes),sizeof(attribute_bytes));
-
-            //TODO: Need constructors to change the C-style arrays to Vertex structs etc.
+            stlfile.read(reinterpret_cast<char*>(std::data(v1)), sizeof(v1));  //Read the three vertices
+            stlfile.read(reinterpret_cast<char*>(std::data(v2)), sizeof(v2));
+            stlfile.read(reinterpret_cast<char*>(std::data(v3)), sizeof(v3));
+            stlfile.read(std::data(attribute_bytes),sizeof(attribute_bytes));   //Read final two bytes
         }
 
         stlfile.close();
