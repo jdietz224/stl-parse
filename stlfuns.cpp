@@ -64,7 +64,10 @@ int main()
     //tmp_v2 = tri_vec[1].vertices[1];
     //tmp_v3 = tri_vec[2].vertices[2];
 
+    std::cout << "Writing Vertices:\n";
     std::cout << tmp_v1 << '\n' << tmp_n << '\n';
+    std::cout << "Writing whole triangle:\n";
+    std::cout << tmp_tri << '\n';
 
     stl_file_binary.close();
 }

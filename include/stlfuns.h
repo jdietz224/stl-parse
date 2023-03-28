@@ -38,6 +38,11 @@ namespace Stl
     {
         return out << vert.V[0] << '\t' << vert.V[1] << '\t' << vert.V[2];
     }
+
+    std::ostream& operator<<(std::ostream& out, Triangle& T)
+    {
+        return out << T.vertices[0] << '\n' << T.vertices[1] << '\n' << T.vertices[2];
+    }
 }
 
 /* Regex Functions*/
