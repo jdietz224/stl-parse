@@ -19,6 +19,10 @@ namespace Stl
         binary,
         invalid = -1,
     };
+
+    typedef std::array<float,3> Vertex;
+
+    /*
     struct Vertex
     {
         std::array<float,3> V;
@@ -26,6 +30,8 @@ namespace Stl
         float operator[](int i) const { return V[i]; }
         float& operator[](int i) { return V[i]; }
     };
+    */
+
     struct Triangle
     {
         std::array<Vertex,3> vertices;
@@ -61,6 +67,8 @@ namespace Stl
         if (isBinary) {
             fileflags = fileflags | std::ios::binary;
             obj.filetype = binary;
+        } else {
+            obj.filetype = ascii;
         }
 
         std::ifstream stlfile(filename, fileflags);
@@ -80,15 +88,15 @@ namespace Stl
         obj.tris.reserve(num_triangles);
 
         //Loop through the number of triangles and read the data for each of them
-        float n_vec[3],vert_1[3],vert_2[3],vert_3[3];
-        char attribute_byte_count[2];
+        Vertex n,v1,v2,v3;
+        std::array<char,2> attribute_bytes;
 
         for(uint32_t i = 0; i < num_triangles; i++){
-            stlfile.read(reinterpret_cast<char*>(&n_vec),sizeof(n_vec));    //Read the normal vector
-            stlfile.read(reinterpret_cast<char*>(&vert_1),sizeof(vert_1));  //Read the three vertices
-            stlfile.read(reinterpret_cast<char*>(&vert_2),sizeof(vert_2));
-            stlfile.read(reinterpret_cast<char*>(&vert_3),sizeof(vert_3));
-            stlfile.read(attribute_byte_count,sizeof(attribute_byte_count));    //Two byte attribute
+            stlfile.read(reinterpret_cast<char*>(std::data(n)), sizeof(n)); //Read the normal vector
+            stlfile.read(reinterpret_cast<char*>(std::data(v1)),sizeof(v1));  //Read the three vertices
+            stlfile.read(reinterpret_cast<char*>(std::data(v2)),sizeof(v2));
+            stlfile.read(reinterpret_cast<char*>(std::data(v3)),sizeof(v3));
+            stlfile.read(std::data(attribute_bytes),sizeof(attribute_bytes));
 
             //TODO: Need constructors to change the C-style arrays to Vertex structs etc.
         }
