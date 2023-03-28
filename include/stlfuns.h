@@ -1,16 +1,8 @@
-#include <iostream>
-#include <fstream>
-#include <iterator>
-#include <string>
-#include <regex>
-#include <filesystem>
-
 #include <array>
+#include <fstream>
+#include <iostream>
+#include <string>
 #include <vector>
-#include <algorithm>
-
-#include <cstring>
-#include <chrono>
 
 /*STL data structures*/
 namespace Stl
@@ -71,11 +63,9 @@ namespace Stl
 
         //Read the 80 byte header from the file.
         stlfile.read(std::data(tmp_header), HEADER_SIZE);
-        std::cout << "File Header: " << tmp_header << '\n';
 
         //Now get the total number of triangles in the object
         stlfile.read(reinterpret_cast<char*>(&num_triangles),sizeof(num_triangles));
-        std::cout << "# triangles: " << num_triangles << '\n';
 
         obj.n_triangles = num_triangles;
         obj.tris.reserve(num_triangles);
@@ -85,56 +75,14 @@ namespace Stl
         uint16_t attribute_byte;
         Triangle tmp_tri;
 
-        auto begin = std::chrono::high_resolution_clock::now();
         for(uint32_t i = 0; i < num_triangles; i++){
             //Read each triangle all at once as a 50-byte chunk of data.
             stlfile.read(reinterpret_cast<char*>(&tmp_tri), TRIANGLE_SIZE);
             obj.tris.push_back(tmp_tri);
         }
-        auto end = std::chrono::high_resolution_clock::now();
-
-        auto diff = std::chrono::duration_cast<std::chrono::microseconds>(end-begin);
-        std::cout << "File processing time: " << diff.count() << " microseconds\n";
 
         stlfile.close();
 
         return 0;
     }
-}
-
-/* Regex Functions*/
-
-void test_regex(){
-    std::string s = "Some people, when confronted with a problem, think "
-        "\"I know, I'll use regular expressions.\" "
-        "Now they have two problems.";
- 
-    std::regex self_regex("REGULAR EXPRESSIONS",
-            std::regex_constants::ECMAScript | std::regex_constants::icase);
-    if (std::regex_search(s, self_regex)) {
-        std::cout << "Text contains the phrase 'regular expressions'\n";
-    }
- 
-    std::regex word_regex("(\\w+)");
-    auto words_begin = 
-        std::sregex_iterator(s.begin(), s.end(), word_regex);
-    auto words_end = std::sregex_iterator();
- 
-    std::cout << "Found "
-              << std::distance(words_begin, words_end)
-              << " words\n";
- 
-    const int N = 6;
-    std::cout << "Words longer than " << N << " characters:\n";
-    for (std::sregex_iterator i = words_begin; i != words_end; ++i) {
-        std::smatch match = *i;
-        std::string match_str = match.str();
-        if (match_str.size() > N) {
-            std::cout << "  " << match_str << '\n';
-        }
-    }
- 
-    std::regex long_word_regex("(\\w{7,})");
-    std::string new_s = std::regex_replace(s, long_word_regex, "[$&]");
-    std::cout << new_s << '\n';
 }
