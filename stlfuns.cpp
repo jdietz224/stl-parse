@@ -4,7 +4,6 @@
 
 int main()
 {
-
     const std::string stl_ascii_filename = "test-files/sphere_ascii.stl";
     const std::string stl_binary_filename = "test-files/femur_binary.stl";
 
