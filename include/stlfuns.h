@@ -8,6 +8,8 @@
 #include <array>
 #include <vector>
 
+#include <cstring>
+
 /*STL data structures*/
 namespace Stl
 {
@@ -60,12 +62,16 @@ namespace Stl
 
         std::ifstream stlfile(filename, fileflags);
 
-        char header[HEADER_SIZE];
-        stlfile.read(header, HEADER_SIZE);
+        char char_header[HEADER_SIZE + 1];
+        std::memset(char_header, '\0', sizeof(char_header));
 
-        printf("%s\n",header);
+        stlfile.read(char_header, HEADER_SIZE);
 
+        std::cout << char_header << '\n';
+        std::cout << std::strlen(char_header) << '\n';
 
+        stlfile.read(reinterpret_cast<char*>(&obj.n_triangles),sizeof(obj.n_triangles));
+        std::cout << obj.n_triangles << '\n';
 
         stlfile.close();
 
