@@ -32,28 +32,23 @@ namespace Stl
         std::vector<Triangle> tris;
     };
 
-    std::ostream& operator<<(std::ostream& out, Vertex& vert)
+    [[nodiscard]] std::ostream& operator<<(std::ostream& out, Vertex& vert) noexcept 
     {
         return out << vert[0] << '\t' << vert[1] << '\t' << vert[2];
     }
 
-    std::ostream& operator<<(std::ostream& out, Triangle& T)
+    [[nodiscard]] std::ostream& operator<<(std::ostream& out, Triangle& T) noexcept 
     {
         return out << T.normal << '\n' 
             << T.vertices[0] << '\n' << T.vertices[1] << '\n' << T.vertices[2] << '\n' 
             << T.attribute_byte << '\n';
     }
 
-    StlObject readStlFile(std::string filename, bool isBinary = true)
+    [[nodiscard]] StlObject readStlFileBinary(std::string filename)
     {
-        auto fileflags = std::ios::in;
+        auto fileflags = std::ios::in | std::ios::binary;
         StlObject obj;
-        obj.header.reserve(HEADER_BYTE_SIZE);
-
-        if (isBinary) {
-            fileflags = fileflags | std::ios::binary;
-            obj.filetype = binary;
-        }
+        obj.filetype = binary;
 
         std::ifstream stlfile;
         obj.filename = filename;
@@ -61,7 +56,7 @@ namespace Stl
 
         if(stlfile.rdstate() == std::ios_base::failbit)
         {
-            throw std::runtime_error("Could not open stl file");
+            throw std::ios_base::failure("Could not open stl file");
         }
 
         Triangle tmp_tri;
