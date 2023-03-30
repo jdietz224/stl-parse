@@ -58,6 +58,12 @@ namespace Stl
         std::ifstream stlfile;
         obj.filename = filename;
         stlfile.open(filename, fileflags);
+
+        if(stlfile.rdstate() == std::ios_base::failbit)
+        {
+            throw std::runtime_error("Could not open stl file");
+        }
+
         Triangle tmp_tri;
 
         //Read the 80 byte header from the file.
