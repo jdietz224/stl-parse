@@ -40,7 +40,7 @@ namespace Stl
     [[nodiscard]] std::ostream& operator<<(std::ostream& out, Triangle& T) noexcept 
     {
         return out << T.normal << '\n' 
-            << T.vertices[0] << '\n' << T.vertices[1] << '\n' << T.vertices[2] << '\n' 
+            << T.vertices[0] << '\n' << T.vertices[1] << '\n' << T.vertices[2] << '\n'
             << T.attribute_byte << '\n';
     }
 
@@ -54,15 +54,16 @@ namespace Stl
         obj.filename = filename;
         stlfile.open(filename, fileflags);
 
-        if(stlfile.rdstate() == std::ios_base::failbit)
+        if(stlfile.rdstate() != std::ios_base::goodbit)
         {
-            throw std::ios_base::failure("Could not open stl file");
+            throw std::ios_base::failure("Error opening stl file");
         }
 
         Triangle tmp_tri;
 
         //Read the 80 byte header from the file.
         stlfile.read(std::data(obj.header), HEADER_BYTE_SIZE);
+        // stlfile.seekg(HEADER_BYTE_SIZE, std::ios_base::beg);
 
         //Now get the total number of triangles in the object
         //TODO: Get rid of all uses of sizeof() function? I'm extremely paranoid about alignment padding causing difficult-to-identify bugs.
@@ -75,6 +76,12 @@ namespace Stl
             //TODO: Is there a way to both read and push-back the triangle vector at the same time?
             //i.e. do this without going through an intermediate tmp_triangle variable?
             stlfile.read(reinterpret_cast<char*>(&tmp_tri), TRIANGLE_BYTE_SIZE);
+            
+            if (stlfile.rdstate() != std::ios_base::goodbit)
+            {
+                throw std::ios_base::failure("Error in stl read");
+            }
+
             obj.tris.push_back(tmp_tri);
         }
 
