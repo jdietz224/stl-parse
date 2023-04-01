@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
 project(stl LANGUAGES CXX)
 add_executable(stlfuns stlfuns.cpp)
+set_property(TARGET stlfuns PROPERTY CXX_STANDARD 20)
 target_include_directories(stlfuns PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_compile_options(stlfuns PRIVATE "-Ofast")
