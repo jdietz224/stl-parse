@@ -34,6 +34,8 @@ namespace Stl
         float& operator[](int i) { return P[i]; }
 
         std::array<float,3> P;
+
+        friend bool operator< (const Vertex &v1, const Vertex &v2);
     };
 
     struct Vertex_Hash
@@ -64,6 +66,21 @@ namespace Stl
     {
         return ((e1.p1 == e2.p1) && (e1.p2 == e2.p2)) 
             || ((e1.p1 == e2.p2) && (e1.p2 == e2.p1));
+    }
+
+    bool operator< (const Vertex &v1, const Vertex &v2)
+    {
+        if (v1.P[0] == v2.P[0])
+        {
+            if (v1.P[1] == v2.P[1])
+            {
+                return v1.P[2] < v2.P[2];
+            }
+
+            return v1.P[1] < v2.P[1];
+        }
+
+        return v1.P[0] < v2.P[0];
     }
 
     struct Edge_Hash
