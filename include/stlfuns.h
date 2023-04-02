@@ -1,4 +1,5 @@
 #include <array>
+#include <algorithm>
 #include <fstream>
 #include <iostream>
 #include <string>
@@ -124,6 +125,27 @@ namespace Stl
             << T.attribute_byte << '\n';
     }
 
+    [[nodiscard]] std::vector<Vertex> processSTL(const StlObject &S) noexcept
+    {
+
+        std::vector<Vertex> vertex_vector;
+        vertex_vector.reserve(S.n_triangles);
+
+        for (auto &t : S.tris)
+        {
+            vertex_vector.push_back(t.vertices[0]);
+            vertex_vector.push_back(t.vertices[1]);
+            vertex_vector.push_back(t.vertices[2]);
+        }
+
+        std::sort(vertex_vector.begin(), vertex_vector.end());
+        std::unique(vertex_vector.begin(), vertex_vector.end());
+
+        vertex_vector.shrink_to_fit();
+
+        return vertex_vector;
+    }
+
     [[nodiscard]] StlObject readStlFileBinary(const std::string filename)
     {
         const auto fileflags = std::ios::in | std::ios::binary;
@@ -167,6 +189,8 @@ namespace Stl
 
         obj.tris.shrink_to_fit();   //This is unnecessary right now, but I don't want to forget it when I parse files that don't have an exact triangle count.
         stlfile.close();
+
+        auto v = processSTL(obj);
 
         return obj;
     }
