@@ -34,17 +34,7 @@ namespace Stl
         float& operator[](int i) { return P[i]; }
 
         std::array<float,3> P;
-
-        //friend bool operator== (const Vertex &v1, const Vertex &v2);
     };
-
-    // Apparently I don't need to specify an operator function anymore
-    /*
-    bool operator==  (const Vertex &v1, const Vertex &v2)
-    {
-        return (v1[0] == v2[0]) && (v1[1] == v2[1]) && (v1[2] == v2[2]);
-    }
-    */
 
     struct Vertex_Hash
     {
@@ -62,7 +52,6 @@ namespace Stl
     {
         Edge() = default;
         Edge(const Vertex &v1, const Vertex &v2) : p1(v1), p2(v2) {}
-        //bool operator==(const Edge&) const = default;
         
         Vertex p1;
         Vertex p2;
@@ -70,6 +59,7 @@ namespace Stl
         friend bool operator== (const Edge &e1, const Edge &e2);
     };
 
+    // This operator needs to be overloaded though, because it needs to account for swapped vertices
     bool operator== (const Edge &e1, const Edge &e2)
     {
         return ((e1.p1 == e2.p1) && (e1.p2 == e2.p2)) 
@@ -117,7 +107,7 @@ namespace Stl
             << T.attribute_byte << '\n';
     }
 
-    std::size_t getNumVertices(const StlObject &S)
+    [[nodiscard]] std::unordered_set<Vertex,Vertex_Hash> getVertices(const StlObject &S) noexcept
     {
         std::unordered_set<Vertex,Vertex_Hash> vertex_set;
         const std::size_t n_float_vals = S.tris.size() * 3;
@@ -132,10 +122,10 @@ namespace Stl
             }
         }
 
-        return vertex_set.size();
+        return vertex_set;
     }
 
-    std::size_t getNumEdges(const StlObject &S)
+    [[nodiscard]] std::unordered_set<Edge,Edge_Hash> getEdges(const StlObject &S)
     {
         std::unordered_set<Edge,Edge_Hash> edge_set;
 
@@ -146,20 +136,57 @@ namespace Stl
             edge_set.insert(Edge(t.vertices[2],t.vertices[0]));
         }
 
-        return edge_set.size();
+        return edge_set;
+    }
+
+    [[nodiscard]] std::unordered_map<Edge,std::vector<uint32_t>,Edge_Hash> getEdgeMap(const StlObject &S)
+    {
+        std::unordered_map<Edge,std::vector<uint32_t>,Edge_Hash> edgemap;
+        edgemap.reserve(S.n_triangles);
+
+        for (uint32_t i = 0; i < S.n_triangles; i++)
+        {
+            auto tmp_tri = S.tris[i];
+
+            edgemap[Edge(tmp_tri.vertices[0],tmp_tri.vertices[1])].push_back(i);
+            edgemap[Edge(tmp_tri.vertices[1],tmp_tri.vertices[2])].push_back(i);
+            edgemap[Edge(tmp_tri.vertices[2],tmp_tri.vertices[0])].push_back(i);
+        }
+
+        return edgemap;
     }
 
     std::size_t calculateEulerCharacteristic(const StlObject &S)
     {
-        return getNumVertices(S) 
-            - getNumEdges(S) 
+        return getVertices(S).size() 
+            - getEdges(S).size()
             + static_cast<std::size_t>(S.n_triangles);
+    }
+
+    void makeConnectivityList(const StlObject &S) noexcept
+    {
+        auto edge_map = getEdges(S);
+        auto edge_vectormap = getEdgeMap(S);
+        auto vertex_map = getVertices(S);
+
+        std::cout << "Length of edge_map =\t" << edge_map.size() << '\n';
+        std::cout << "Length of edge_multimap =\t" << edge_vectormap.size() << '\n';
+
+        // For each triangle in S, find another triangle in S that shares an edge with it
+        std::vector<std::array<uint32_t,3>> connectivity_map;
+        connectivity_map.reserve(S.n_triangles);
+
+        for (uint32_t i = 0; i < S.n_triangles; i++)
+        {
+            std::array<uint32_t,3> tmp_indices{};            
+
+            connectivity_map.push_back(tmp_indices);
+        }
     }
 
     void UniquifyStlObj(StlObject &S)
     {
-        auto E_N = calculateEulerCharacteristic(S);
-        std::cout << "Euler Characteristic: " << E_N << '\n';
+        makeConnectivityList(S);
         return;
     }
 
