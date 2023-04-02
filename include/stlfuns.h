@@ -14,15 +14,13 @@ namespace Stl
     constexpr std::size_t TRIANGLE_BYTE_SIZE = 50;
     constexpr std::size_t HEADER_BYTE_SIZE = 80;
 
-    enum STL_File_Type
-    {
+    enum STL_File_Type {
         ascii,
         binary,
         invalid = -1,
     };
 
-    struct Vertex
-    {
+    struct Vertex {
         Vertex() = default;
         Vertex(const float p0, const float p1, const float p2) : P{p0, p1, p2} {}
         bool operator==(const Vertex&) const = default;
@@ -39,8 +37,7 @@ namespace Stl
         friend bool operator< (const Vertex &v1, const Vertex &v2);
     };
 
-    struct Vertex_Hash
-    {
+    struct Vertex_Hash {
         std::size_t operator()(Vertex const& V) const noexcept
         {
             std::size_t seed = 0;
@@ -51,8 +48,7 @@ namespace Stl
         }
     };
 
-    struct Edge
-    {
+    struct Edge {
         Edge() = default;
         Edge(const Vertex &v1, const Vertex &v2) : p1(v1), p2(v2) {}
         
@@ -63,14 +59,12 @@ namespace Stl
     };
 
     // This operator needs to be overloaded though, because it needs to account for swapped vertices
-    bool operator== (const Edge &e1, const Edge &e2)
-    {
+    bool operator== (const Edge &e1, const Edge &e2) {
         return ((e1.p1 == e2.p1) && (e1.p2 == e2.p2)) 
             || ((e1.p1 == e2.p2) && (e1.p2 == e2.p1));
     }
 
-    bool operator< (const Vertex &v1, const Vertex &v2)
-    {
+    bool operator< (const Vertex &v1, const Vertex &v2) {
         if (v1.P[0] == v2.P[0])
         {
             if (v1.P[1] == v2.P[1])
@@ -84,8 +78,7 @@ namespace Stl
         return v1.P[0] < v2.P[0];
     }
 
-    struct Edge_Hash
-    {
+    struct Edge_Hash {
         std::size_t operator()(Edge const& E) const noexcept
         {
             std::size_t seed1 = Vertex_Hash{}(E.p1);
@@ -98,14 +91,12 @@ namespace Stl
         }
     };
 
-    struct Triangle
-    {
+    struct Triangle {
         Vertex normal;
         std::array<Vertex,3> vertices;
         uint16_t attribute_byte;
     };
-    struct StlObject
-    {
+    struct StlObject {
         std::string filename;
         STL_File_Type filetype = invalid;
         std::string header = std::string(HEADER_BYTE_SIZE,'\0');
@@ -113,20 +104,17 @@ namespace Stl
         std::vector<Triangle> tris;
     };
 
-    [[nodiscard]] std::ostream& operator<<(std::ostream& out, Vertex& vert) noexcept 
-    {
+    [[nodiscard]] auto operator<<(std::ostream& out, Vertex& vert) noexcept -> std::ostream& {
         return out << vert[0] << '\t' << vert[1] << '\t' << vert[2];
     }
 
-    [[nodiscard]] std::ostream& operator<<(std::ostream& out, Triangle& T) noexcept 
-    {
+    [[nodiscard]] auto operator<<(std::ostream& out, Triangle& T) noexcept -> std::ostream& {
         return out << T.normal << '\n' 
             << T.vertices[0] << '\n' << T.vertices[1] << '\n' << T.vertices[2] << '\n'
             << T.attribute_byte << '\n';
     }
 
-    [[nodiscard]] std::vector<Vertex> processSTL(const StlObject &S) noexcept
-    {
+    [[nodiscard]] auto processStl(const StlObject &S) noexcept -> std::vector<Vertex> {
 
         std::vector<Vertex> vertex_vector;
         vertex_vector.reserve(S.n_triangles);
@@ -146,8 +134,7 @@ namespace Stl
         return vertex_vector;
     }
 
-    [[nodiscard]] StlObject readStlFileBinary(const std::string filename)
-    {
+    [[nodiscard]] auto readStlFileBinary(const std::string filename) -> StlObject {
         const auto fileflags = std::ios::in | std::ios::binary;
         StlObject obj;
         obj.filetype = binary;
@@ -190,7 +177,7 @@ namespace Stl
         obj.tris.shrink_to_fit();   //This is unnecessary right now, but I don't want to forget it when I parse files that don't have an exact triangle count.
         stlfile.close();
 
-        auto v = processSTL(obj);
+        auto v = processStl(obj);
 
         return obj;
     }
