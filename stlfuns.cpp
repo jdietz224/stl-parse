@@ -11,7 +11,7 @@ int main()
     auto S = Stl::readStlFileBinary(stl_binary_filename);
     std::cout << "# of triangles: " << S.n_triangles << '\n';
 
-    Stl::makeConnectivityList(S);
+    auto [vertex_buffer, index_buffer] = processStlObject(S);
     
     return 0;
 }
