@@ -23,20 +23,21 @@ namespace Stl
 
     struct Vertex {
         Vertex() = default;
-        Vertex(const uint32_t p0, const uint32_t p1, const uint32_t p2) : P{p0, p1, p2} {}
+        Vertex(const float p0, const float p1, const float p2) : P{p0, p1, p2} {}
         bool operator==(const Vertex&) const = default;
 
         double x() const { return P[0]; }
         double y() const { return P[1]; }
         double z() const { return P[2]; }
 
-        uint32_t operator[](int i) const { return P[i]; }
-        uint32_t& operator[](int i) { return P[i]; }
+        float operator[](int i) const { return P[i]; }
+        float& operator[](int i) { return P[i]; }
 
-        std::array<uint32_t,3> P;
+        std::array<float,3> P;
 
         friend bool operator< (const Vertex &v1, const Vertex &v2);
     };
+
     bool operator< (const Vertex &v1, const Vertex &v2) {
         if (v1.P[0] == v2.P[0]) {
             if (v1.P[1] == v2.P[1]) {
