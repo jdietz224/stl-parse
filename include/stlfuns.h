@@ -6,7 +6,6 @@
 #include <vector>
 #include <unordered_set>
 #include <functional>
-#include <boost/functional/hash.hpp>
 #include <gsl/narrow>
 
 /*STL data structures*/
