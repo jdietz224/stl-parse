@@ -25,6 +25,12 @@ namespace Stl
 
     struct Vertex {
         Vertex() = default;
+        ~Vertex() = default;
+        Vertex(const Vertex&) = default;
+        Vertex(Vertex&&) = default;
+        Vertex& operator=(const Vertex&) = default;
+        Vertex& operator=(Vertex&&) = default;
+
         Vertex(const float p0, const float p1, const float p2) : P{p0, p1, p2} {}
         bool operator==(const Vertex&) const = default;
 
@@ -161,7 +167,7 @@ namespace Stl
         return make_pair(vertex_buffer,index_buffer);
     }
 
-    [[nodiscard]] auto computeStlNormals(StlObject& S) -> void
+    auto computeStlNormals(StlObject& S) -> void
     {
         for (auto& tri : S.tris) {
             tri.normal = normal_vector(tri);
