@@ -1,5 +1,8 @@
+#pragma once
 #include <array>
 #include <algorithm>
+#include <cmath>
+#include <ranges>
 #include <fstream>
 #include <iostream>
 #include <string>
@@ -25,32 +28,24 @@ namespace Stl
         Vertex(const float p0, const float p1, const float p2) : P{p0, p1, p2} {}
         bool operator==(const Vertex&) const = default;
 
-        double x() const { return P[0]; }
-        double y() const { return P[1]; }
-        double z() const { return P[2]; }
+        inline float x() const { return P[0]; }
+        inline float y() const { return P[1]; }
+        inline float z() const { return P[2]; }
 
-        float operator[](int i) const { return P[i]; }
-        float& operator[](int i) { return P[i]; }
+        inline float magnitude() const { return std::sqrt((P[0]*P[0]) + (P[1]*P[1]) + (P[2]*P[2])); }
+
+        inline float operator[](int i) const { return P[i]; }
+        inline float& operator[](int i) { return P[i]; }
 
         std::array<float,3> P;
-
-        friend bool operator< (const Vertex &v1, const Vertex &v2);
     };
-
-    bool operator< (const Vertex &v1, const Vertex &v2) {
-        if (v1.P[0] == v2.P[0]) {
-            if (v1.P[1] == v2.P[1]) {
-                return v1.P[2] < v2.P[2];
-            }
-            return v1.P[1] < v2.P[1];
-        }
-        return v1.P[0] < v2.P[0];
-    }
+    
     struct Triangle {
         Vertex normal;
         std::array<Vertex,3> vertices;
         uint16_t attribute_byte;
     };
+
     struct StlObject {
         std::string filename;
         STL_File_Type filetype = invalid;
@@ -59,14 +54,68 @@ namespace Stl
         std::vector<Triangle> tris;
     };
 
+    [[nodiscard]] auto operator+(const Vertex& v1, const Vertex& v2) noexcept -> Vertex
+    {
+        return Vertex(v1.x() + v2.x(), v1.y() + v2.y(), v1.z() + v2.z());
+    }
+
+    [[nodiscard]] auto operator-(const Vertex& v1, const Vertex& v2) noexcept -> Vertex
+    {
+        return Vertex(v1.x() - v2.x(), v1.y() - v2.y(), v1.z() - v2.z());
+    }
+
+    [[nodiscard]] auto operator*(const float& t, const Vertex& v) noexcept -> Vertex
+    {
+        return Vertex(v.x() * t, v.y() * t, v.z() * t);
+    }
+
+    [[nodiscard]] auto operator*(const Vertex& v, const float& t) noexcept -> Vertex
+    {
+        return t * v;
+    }
+
+    [[nodiscard]] auto operator/ (const Vertex& v, const float& t) noexcept -> Vertex
+    {
+        return v * (1/t);
+    }
+
+    [[nodiscard]] auto operator< (const Vertex& v1, const Vertex& v2) noexcept -> bool
+    {
+        if (v1.x() == v2.x()) {
+            if (v1.y() == v2.y()) {
+                return v1.z() < v2.z();
+            }
+            return v1.y() < v2.y();
+        }
+        return v1.x() < v2.x();
+    }
+
     [[nodiscard]] auto operator<<(std::ostream& out, Vertex& vert) noexcept -> std::ostream& {
-        return out << vert[0] << '\t' << vert[1] << '\t' << vert[2];
+        return out << vert.x() << '\t' << vert.y() << '\t' << vert.z();
     }
 
     [[nodiscard]] auto operator<<(std::ostream& out, Triangle& T) noexcept -> std::ostream& {
         return out << T.normal << '\n' 
             << T.vertices[0] << '\n' << T.vertices[1] << '\n' << T.vertices[2] << '\n'
             << T.attribute_byte << '\n';
+    }
+
+    [[nodiscard]] auto normal_vector(const Vertex p0, const Vertex p1, const Vertex p2) noexcept -> Vertex
+    {
+        Vertex v = p1 - p0;
+        Vertex w = p2 - p0;
+
+        Vertex nhat = Vertex(   (v.y() * w.z()) - (v.z() * w.y()),
+                                (v.z() * w.x()) - (v.x() * w.z()),
+                                (v.x() * w.y()) - (w.x() * v.y()));
+
+
+        return nhat/nhat.magnitude();
+    }
+
+    [[nodiscard]] auto normal_vector(const Triangle& t) noexcept -> Vertex
+    {
+        return normal_vector(t.vertices[0], t.vertices[1], t.vertices[2]);
     }
 
     [[nodiscard]] auto getVertexBuffer(const StlObject &S) noexcept -> std::vector<Vertex> {
@@ -81,7 +130,7 @@ namespace Stl
         }
 
         std::sort(vertex_vector.begin(), vertex_vector.end());
-        std::unique(vertex_vector.begin(), vertex_vector.end());
+        auto endItr = std::unique(vertex_vector.begin(), vertex_vector.end());
 
         vertex_vector.shrink_to_fit();
 
@@ -112,7 +161,14 @@ namespace Stl
         return make_pair(vertex_buffer,index_buffer);
     }
 
-    [[nodiscard]] auto readStlFileBinary(const std::string filename) -> StlObject {
+    [[nodiscard]] auto computeStlNormals(StlObject& S) -> void
+    {
+        for (auto& tri : S.tris) {
+            tri.normal = normal_vector(tri);
+        }
+    }
+
+    [[nodiscard]] auto readStlFileBinary(const std::string filename, bool normals_provided = false) -> StlObject {
         const auto fileflags = std::ios::in | std::ios::binary;
         StlObject obj;
         obj.filetype = binary;
@@ -125,11 +181,10 @@ namespace Stl
             throw std::ios_base::failure("Error opening stl file");
         }
 
-        Triangle tmp_tri;
+        Triangle tmp_tri{};
 
         //Read the 80 byte header from the file.
         stlfile.read(std::data(obj.header), HEADER_BYTE_SIZE);
-        // stlfile.seekg(HEADER_BYTE_SIZE, std::ios_base::beg);
 
         //Now get the total number of triangles in the object
         //TODO: Get rid of all uses of sizeof() function? I'm extremely paranoid about alignment padding causing difficult-to-identify bugs.
@@ -152,6 +207,10 @@ namespace Stl
 
         obj.tris.shrink_to_fit();   //This is unnecessary right now, but I don't want to forget it when I parse files that don't have an exact triangle count.
         stlfile.close();
+
+        if (!normals_provided) {
+            computeStlNormals(obj);
+        }
         
         return obj;
     }
